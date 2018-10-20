@@ -58,7 +58,7 @@ def merge_CC(stats_final_, thresh_hold):
         i=i+1    
     return stats_list
 
-def Final_Binary_convert(img,connectivity=8, breakdown = False):
+def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown = False):
     # address_area = img
     address_area =cv2.medianBlur(img, 3)   
      
@@ -127,7 +127,7 @@ def Final_Binary_convert(img,connectivity=8, breakdown = False):
     arr_temp = np.argsort(arr_ret[:,0])
     stats_final = np.array([arr_ret[s] for s in arr_temp])
     stats_all = stats_final 
-    stats_all = merge_CC(stats_final, 5)     
+    stats_all = merge_CC(stats_final, thresh_hold_distance)     
     
     
     processed_area = processed_area*mask
@@ -139,12 +139,12 @@ def recognize_character_bbox(img, connectivity=8, thresh_hold_distance = 5):
     process_img = img
     if img.ndim == 3:
         process_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(process_img)
+    ret, stat = Final_Binary_convert(process_img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
     return stat.shape[0], stat
 def recognize_character_img(img, connectivity=8, thresh_hold_distance = 5):
     if img.ndim == 3:
         process_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(process_img)
+    ret, stat = Final_Binary_convert(process_img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
     res = []
     for bbox in stat:
         bbox = np.squeeze(bbox)
