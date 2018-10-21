@@ -1,0 +1,22 @@
+ul{
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#processedImg{ 
+    margin-bottom: 10px;
+}
+
+#processedImg img {
+    max-height: 80px; 
+    max-width: 600px;
+}
+
+#result {
+    margin-bottom: 10px;
+}
+
+#result li{
+    display: inline-block;
+    padding: 0 5px 5px 0;
+}

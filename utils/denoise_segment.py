@@ -99,19 +99,19 @@ def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown 
             if i+1 in labels_in_mask:
                 labels_in_mask.remove(i+1)
             continue
-        # xoa nhung vạch nhỏ sát viền trên
+        # xoa nhung vach nho sat vien tren
         if y[i]<=(1-0.96)*height and stats[i+1][3]<=(1-0.96)*height:
             mask[labels == (i+1)] = 0
             if i+1 in labels_in_mask:
                 labels_in_mask.remove(i+1)
             continue
-        #xóa những vạch nhỏ sát mép phải
+        #xoa vach nho sat mep phai
         if x[i]>=(1-0.996)*width and stats[i+1][2]<=(1-0.996)*width:
             mask[labels == (i+1)] = 0
             if i+1 in labels_in_mask:
                 labels_in_mask.remove(i+1)
             continue
-        # xoa những vạch kẻ tương đối lớn
+        # xoa nhung vach ke lon
         if stats[i+1][2]>=0.6*width or  stats[i+1][2] > 3*height:
             mask[labels == (i+1)] = 0
             if i+1 in labels_in_mask:
@@ -135,19 +135,54 @@ def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown 
     processed_area = 255 - processed_area
     return processed_area,stats_all
 
-def recognize_character_bbox(img, connectivity=8, thresh_hold_distance = 5):
-    process_img = img
+def segment_character_bbox(img, connectivity=8, thresh_hold_distance = 5):
     if img.ndim == 3:
-        process_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(process_img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
     return stat.shape[0], stat
-def recognize_character_img(img, connectivity=8, thresh_hold_distance = 5):
+
+def segment_character_img(img, connectivity=8, thresh_hold_distance = 5):
     if img.ndim == 3:
-        process_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(process_img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
     res = []
     for bbox in stat:
         bbox = np.squeeze(bbox)
         x, y, w, h,_ = bbox
         res.append(img[y:y+h, x:x+w])
     return len(res), res
+
+def segment_character(img, connectivity=8, thresh_hold_distance = 5):
+    if img.ndim == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
+    res = []
+    for bbox in stat:
+        bbox = np.squeeze(bbox)
+        x, y, w, h,_ = bbox
+        res.append(preprocess_img(img[y:y+h, x:x+w]))
+    return len(res), stat, res
+
+def preprocess_img(img, SIZE=100):
+    if img.ndim == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, img_threshold = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    desired_size = int(1.1 * max(img_threshold.shape[0], img_threshold.shape[1]))
+    delta_w = desired_size - img_threshold.shape[1]
+    delta_h = desired_size - img_threshold.shape[0]
+    top, bottom = delta_h//2, delta_h-(delta_h//2)
+    left, right = delta_w//2, delta_w-(delta_w//2)
+
+    img_pad = cv2.copyMakeBorder(img_threshold, top, bottom, left, right, cv2.BORDER_CONSTANT,
+        value=(0,0,0))
+    img_final = cv2.resize(img_pad, (SIZE, SIZE))
+    return img_final
+
+if __name__ == "__main__":
+    img = cv2.imread('img_test/case1.png')
+    cv2.imshow('img', img)
+    n, bboxes, images = segment_character(img)
+    for i in range(n):
+        cv2.imshow(str(i), preprocess_img(images[i]))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

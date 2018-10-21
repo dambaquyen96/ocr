@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TF JS example</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.7"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <link href="web/imgareaselect/css/imgareaselect-default.css" rel="stylesheet">
+    <link href="web/main.css" rel="stylesheet">
+    <script src="web/imgareaselect/js/jquery.imgareaselect.js"></script>
+</head>
+<body>
+    <div class="row">
+        <h1 class="text-center">OCR Demo</h1>
+    </div>
+    <div class="row">
+        <div class="col-md-12" style="margin-bottom: 30px">
+            <input type="file" name="file" id="file" class="form-control-file" style="margin: 0 auto">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="text-center">
+                <h3>Preview</h3>
+                <img id="filePreview" style="width: 100%;">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12" style="margin-bottom: 10px">
+                    <div>
+                        <h3 class="text-center">Cropped</h3>
+                        <div id="preview" style="height: 80px; overflow: hidden">
+                            <img id="fileCropPreview">
+                            <div id="total_width" style="display: none"></div>
+                            <div id="total_height" style="display: none"></div>
+                            <div id="width" style="display: none"></div>
+                            <div id="height" style="display: none"></div>
+                            <div id="x" style="display: none"></div>
+                            <div id="y" style="display: none"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" style="margin-bottom: 10px">
+                    <button id="predict" type="submit">Predict</button>
+                </div>
+                <div id="processedImg" class="col-md-12">
+                    
+                </div>
+                <div  class="col-md-12">
+                    <ul id="result">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    //set image coordinates
+    function updateCoords(im,obj){
+        var scale = Math.min(80/obj.height, 600/obj.width);
+        $('#preview').css({
+            height: scale*obj.height,
+            width: scale*obj.width,
+            overflow: 'hidden'
+        });
+        $('#fileCropPreview').css({
+            width: Math.round(scale*$('#filePreview').width()),
+            height: Math.round(scale*$('#filePreview').height()),
+            marginLeft: -Math.round(scale*obj.x1),
+            marginTop: -Math.round(scale*obj.y1)
+        });
+        $('#total_width').text($('#filePreview').width());
+        $('#total_height').text($('#filePreview').height());
+        $('#width').text(obj.width);
+        $('#height').text(obj.height);
+        $('#x').text(obj.x1);
+        $('#y').text(obj.y1);
+    }
+    
+    //check coordinates
+    function checkCoords(){
+        if(parseInt($('#w').val())) return true;
+        alert('Please select a crop region then press submit.');
+        return false;
+    }
+    
+    $(document).ready(function(){
+        //prepare instant image preview
+        var p = $("#filePreview");
+        var p2 = $('#fileCropPreview');
+        $("#file").change(function(){
+            //fadeOut or hide preview
+            p.fadeOut();
+    
+            //prepare HTML5 FileReader
+            var oFReader = new FileReader();
+            oFReader.readAsDataURL(document.getElementById("file").files[0]);
+    
+            oFReader.onload = function (oFREvent) {
+                p.attr('src', oFREvent.target.result).fadeIn();
+                p2.attr('src', oFREvent.target.result).fadeIn();
+            };
+        });
+    
+        //implement imgAreaSelect plugin
+        $('img#filePreview').imgAreaSelect({
+            // set crop ratio (optional)
+            //aspectRatio: '2:1',
+            onSelectEnd: updateCoords
+        });
+    });
+    </script>
+    <script src="web/main.js"></script>
+</html>
