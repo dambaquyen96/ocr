@@ -26,6 +26,10 @@ def load_shards_1(path):
 def load_shards_2(path):
     return send_from_directory('web', path)
 
+@app.route('/web/assets/<path:path>')
+def load_shards_6(path):
+    return send_from_directory('web/assets', path)
+
 @app.route('/web/imgareaselect/<path:path>')
 def load_shards_3(path):
     return send_from_directory('web/imgareaselect', path)

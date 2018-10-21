@@ -48,7 +48,6 @@ const predict = async (modelURL) => {
         for(var i = 0; i < tmp.size; i++){
             labels.push(tmp.get([i]));
             scores.push(predictionData[i*3095 + labels[i]]);
-            console.log(labels[i] + ' ' + scores[i]);
         }
         renderProcessedImg(processedImage);
         renderImageLabel(JPGImage, labels, scores);
@@ -69,7 +68,7 @@ const renderImageLabel = (imgs, labels, scores) => {
         //                     </div>`;
         result.innerHTML += `<li style="width: 100px; text-align: center;">
                                 <div><img src="${imgs[i]}" style="width: 100%"></div>
-                                <div>${labels[i]} - ${str_label[labels[i]]} - ${Math.round(100*scores[i])}%</div>
+                                <div>${str_label[labels[i]]} - ${Math.round(100*scores[i])}%</div>
                             </li>`
     }
 };
