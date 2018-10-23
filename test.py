@@ -9,6 +9,7 @@ import codecs
 import keras
 import tensorflow as tf
 from keras.applications.mobilenet import MobileNet
+from keras.models import model_from_json
 
 BATCH_SIZE = 128
 N_CLASSES = 3095
@@ -20,6 +21,11 @@ IMG_SIZE = 100
 model = MobileNet(input_shape=(IMG_SIZE, IMG_SIZE, 3), include_top=True, classes=N_CLASSES, weights=None)
 model.load_weights("models/weights-improvement-26-0.00.hdf5")
 model.summary()
+with open("models/model.json", "w") as json_file:
+    json_file.write(model.to_json())
+
+model2 = model_from_json(open('models/model.json', 'r').read())
+model2.load_weights("models/weights-improvement-26-0.00.hdf5")
 
 def transform(img):
     height, width = img.shape
@@ -67,7 +73,7 @@ for bbox in bboxes:
     X = subimg_rgb.astype(np.float64)
     X *= 1./255
     X = np.array([X])
-    Y = model.predict(X)
+    Y = model2.predict(X)
     Y_label = Y[0].argsort()[-3:][::-1]
     for i in range(len(Y_label)):
         idx_int = Y_label[i]
