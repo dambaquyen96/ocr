@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from utils.some_update import Final_Binary_convert as convert
 def me_median(a):
     return np.mean(a, axis = 0)
 
@@ -15,7 +16,8 @@ def distance(stat1, stat2):
     if stat1[0] > stat2[0]:
         stat1, stat2 = stat2, stat1
     return stat2[0] - stat1[0] - stat1[2]
-
+def find_thresh_hold_distance(stats_all):
+    
 def merge_CC(stats_final_, thresh_hold):
     #[x y w h area]
     # kiem tra CC chong cheo nhau truoc
@@ -64,8 +66,10 @@ def merge_CC(stats_final_, thresh_hold):
         # print(i, 5)
         i=i+1    
     return stats_list
-
-def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown = False):
+def find_thresh_hold_distance(stats_all):
+    width_mean = me_median([s[3] for s in stats_all])
+    return 
+def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=None, breakdown = False):
     # address_area = img
     address_area =cv2.medianBlur(img, 3)   
      
@@ -152,10 +156,10 @@ def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown 
         #         labels_in_mask.remove(i+1)
         #     continue
         # xoa nhung net thang dung(ap dung cho 1 line)
-        if stats[i+1][3]>=0.98*height and stats[i+1][3]<0.05*height:
-            mask[labels == (i+1)] = 0
-            if i+1 in labels_in_mask:labels_in_mask.remove(i+1)
-            continue
+        # if stats[i+1][3]>=0.98*height and stats[i+1][3]<0.05*height:
+        #     mask[labels == (i+1)] = 0
+        #     if i+1 in labels_in_mask:labels_in_mask.remove(i+1)
+        #     continue
     if len(labels_in_mask) == 0:
             return processed_area, []
     # median_width = me_median([s[2] for s in stats])
@@ -165,7 +169,9 @@ def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown 
     arr_ret = np.array([stats[s] for s in labels_in_mask])
     arr_temp = np.argsort(arr_ret[:,0])
     stats_final = np.array([arr_ret[s] for s in arr_temp])
-    stats_all = stats_final 
+    stats_all = stats_final
+    if thresh_hold_distance is None:
+        thresh_hold_distance = find_thresh_hold_distance(stats_all)
     stats_all = merge_CC(stats_final, thresh_hold_distance)     
     
     
@@ -174,13 +180,13 @@ def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=5, breakdown 
     processed_area = 255 - processed_area
     return processed_area,stats_all
 
-def segment_character_bbox(img, connectivity=8, thresh_hold_distance = 5):
+def segment_character_bbox(img, connectivity=8, thresh_hold_distance = None):
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
     return stat.shape[0], stat
 
-def segment_character_img(img, connectivity=8, thresh_hold_distance = 5):
+def segment_character_img(img, connectivity=8, thresh_hold_distance = None):
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
@@ -191,10 +197,10 @@ def segment_character_img(img, connectivity=8, thresh_hold_distance = 5):
         res.append(img[y:y+h, x:x+w])
     return len(res), res
 
-def segment_character(img, connectivity=8, thresh_hold_distance = 5):
+def segment_character(img, connectivity=8, thresh_hold_distance = None):
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
+    ret, stat = convert(img)
     res = []
     for bbox in stat:
         bbox = np.squeeze(bbox)
@@ -218,7 +224,7 @@ def preprocess_img(img, SIZE=100):
     return img_final
 
 if __name__ == "__main__":
-    img = cv2.imread('img_test/case7.png')
+    img = cv2.imread('img_test/case3.png')
     cv2.imshow('img', img)
     n, bboxes, images = segment_character(img)
     for i in range(n):
