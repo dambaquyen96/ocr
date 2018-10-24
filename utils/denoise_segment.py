@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from utils.some_update import Final_Binary_convert as convert
+from utils.update_posProcessing import Final_Binary_convert as convert
 def me_median(a):
     return np.mean(a, axis = 0)
 
@@ -16,8 +16,6 @@ def distance(stat1, stat2):
     if stat1[0] > stat2[0]:
         stat1, stat2 = stat2, stat1
     return stat2[0] - stat1[0] - stat1[2]
-def find_thresh_hold_distance(stats_all):
-    
 def merge_CC(stats_final_, thresh_hold):
     #[x y w h area]
     # kiem tra CC chong cheo nhau truoc
@@ -25,8 +23,8 @@ def merge_CC(stats_final_, thresh_hold):
     i = 0
     while(i<len(stats_list)-1):
         if stats_list[i][0]<=stats_list[i+1][0] and  stats_list[i][0]+stats_list[i][2]>=stats_list[i+1][0]:
-                stats_list[i] =  connected_CC(stats_list[i],stats_list[i+1])    
-                stats_list = np.delete(stats_list,i+1,axis=0)
+            stats_list[i] =  connected_CC(stats_list[i],stats_list[i+1])    
+            stats_list = np.delete(stats_list,i+1,axis=0)
         else:i=i+1
         # co chong cheo xay ra
     me_median_width = me_median(stats_list[:,2])
@@ -183,13 +181,13 @@ def Final_Binary_convert(img, connectivity=8, thresh_hold_distance=None, breakdo
 def segment_character_bbox(img, connectivity=8, thresh_hold_distance = None):
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
+    ret, stat = convert(img)
     return stat.shape[0], stat
 
 def segment_character_img(img, connectivity=8, thresh_hold_distance = None):
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, stat = Final_Binary_convert(img, connectivity=connectivity, thresh_hold_distance=thresh_hold_distance)
+    ret, stat = convert(img)
     res = []
     for bbox in stat:
         bbox = np.squeeze(bbox)
