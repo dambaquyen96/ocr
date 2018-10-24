@@ -16,8 +16,6 @@ def distance(stat1, stat2):
     if stat1[0] > stat2[0]:
         stat1, stat2 = stat2, stat1
     return stat2[0] - stat1[0] - stat1[2]
-def find_thresh_hold_distance(stats_all):
-    
 def merge_CC(stats_final_, thresh_hold):
     #[x y w h area]
     # kiem tra CC chong cheo nhau truoc
